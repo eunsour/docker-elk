@@ -88,14 +88,16 @@ services:
       - efk
 
   docker-filebeat:
-    container_name: docker-filebeat
     user: root
+    container_name: docker-filebeat
     build:
       context: filebeat/
       args:
         ELK_VERSION: ${ELK_VERSION}
     volumes:
       - ./filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - efk
 
