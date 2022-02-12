@@ -1,0 +1,7 @@
+server:
+  name: kibana_system
+  host: 0.0.0.0
+  maxPayload: 104857600
+
+elasticsearch:
+  hosts: ["http://host.docker.internal:9200"]
