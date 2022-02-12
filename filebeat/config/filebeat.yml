@@ -1,0 +1,32 @@
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - ./elasticsearch/logs/*.log
+
+json.keys_under_root: true
+json.add_error_key: true
+json.message_key: log
+
+filebeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: false
+
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      hints.enabled: true
+
+setup.ilm.enabled: false
+setup.template.enabled: false
+
+output.elasticsearch:
+  hosts: ["localhost:9200"]
+  protocol: "http"
+  index: "filebeat-es-%{+yyyy.MM.dd}"
+
+processors:
+  - add_cloud_metadata: ~
+  - decode_json_fields:
+      fields: ["message"]
+
