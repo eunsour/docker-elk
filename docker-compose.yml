@@ -1,0 +1,110 @@
+version: '3.7'
+services:
+  docker-es:
+    container_name: docker-es
+    build:
+      context: elasticsearch/
+      args:
+        ELK_VERSION: ${ELK_VERSION}
+    environment:
+      - node.name=single-node
+      - cluster.name=${CLUSTER_NAME}
+      - discovery.type=single-node
+      - discovery.seed_hosts=single-node
+      - path.data=/usr/share/elasticsearch/data
+      - path.logs=/usr/share/elasticsearch/logs
+      - bootstrap.memory_lock=true
+      - http.port=9200
+      - transport.port=9300
+      - transport.compress=true
+      - network.host=0.0.0.0
+      - http.cors.enabled=false
+      - http.cors.allow-origin=/https?:\/\/localhost(:[0-9]+)?/
+      - gateway.expected_master_nodes=1
+      - gateway.expected_data_nodes=1
+      - gateway.recover_after_master_nodes=1
+      - gateway.recover_after_data_nodes=1
+      - action.auto_create_index=true
+      - action.destructive_requires_name=true
+      - cluster.routing.use_adaptive_replica_selection=true
+      - xpack.monitoring.enabled=false
+      - xpack.ml.enabled=false
+      - http.compression=true
+      - http.compression_level=3
+      - "ES_JAVA_OPTS=-Xms${XMS} -Xmx${XMX}"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nproc:
+        soft: 1024000
+        hard: 1024000
+      nofile:
+        soft: 1024000
+        hard: 1024000
+    sysctls:
+      net.core.somaxconn: 65000
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail localhost:9200/_cat/health || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    restart: always
+    volumes:
+      - ./elasticsearch/data:/usr/share/elasticsearch/data:rw
+      - ./elasticsearch/logs:/usr/share/elasticsearch/logs:rw
+    ports:
+      - 9200:9200
+      - 9300:9300
+    expose:
+      - 9200
+      - 9300
+    networks:
+      - efk
+
+  docker-kibana:
+    container_name: docker-kibana
+    build:
+      context: kibana/
+      args:
+        ELK_VERSION: ${ELK_VERSION}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s -I http://localhost:5601 | grep -q 'HTTP/1.1 302 Found'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+    restart: always
+    volumes:
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml
+    ports:
+      - 5601:5601
+    expose:
+      - 5601
+    networks:
+      - efk
+
+  docker-filebeat:
+    container_name: docker-filebeat
+    user: root
+    build:
+      context: filebeat/
+      args:
+        ELK_VERSION: ${ELK_VERSION}
+    volumes:
+      - ./filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml
+    networks:
+      - efk
+
+volumes:
+  data:
+    driver: local
+  logs:
+    driver: local
+
+networks:
+  efk:
+    driver: bridge
