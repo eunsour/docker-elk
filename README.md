@@ -4,7 +4,7 @@
 # Getting started 
 ```bash
 git clone https://github.com/eunsour/docker-efk.git
-docker-compose build && docker-compose up -d
+docker-compose up -d --build
 ```
 <br>
 
