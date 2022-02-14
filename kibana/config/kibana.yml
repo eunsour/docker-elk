@@ -4,4 +4,4 @@ server:
   maxPayload: 104857600
 
 elasticsearch:
-  hosts: ["http://host.docker.internal:9200"]
+  hosts: ["http://docker-es:9200"]
