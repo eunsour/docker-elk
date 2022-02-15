@@ -21,7 +21,7 @@ setup.ilm.enabled: false
 setup.template.enabled: false
 
 output.elasticsearch:
-  hosts: ["http:/docker-es:9200"]
+  hosts: ["docker-es:9200"]
   protocol: "http"
   index: "filebeat-es-%{+yyyy.MM.dd}"
 
