@@ -4,10 +4,6 @@
 # Getting started 
 ```bash
 git clone https://github.com/eunsour/docker-efk.git
-
-sudo chown root ./filebeat/config/filebeat.yml
-sudo chmod go-w ./filebeat/config/filebeat.yml
-
 docker-compose up -d --build
 ```
 <br>
