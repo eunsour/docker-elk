@@ -7,30 +7,6 @@ services:
       args:
         ELK_VERSION: ${ELK_VERSION}
     environment:
-      - node.name=single-node
-      - cluster.name=${CLUSTER_NAME}
-      - discovery.type=single-node
-      - discovery.seed_hosts=single-node
-      - path.data=/usr/share/elasticsearch/data
-      - path.logs=/usr/share/elasticsearch/logs
-      - bootstrap.memory_lock=true
-      - http.port=9200
-      - transport.port=9300
-      - transport.compress=true
-      - network.host=0.0.0.0
-      - http.cors.enabled=false
-      - http.cors.allow-origin=/https?:\/\/localhost(:[0-9]+)?/
-      - gateway.expected_master_nodes=1
-      - gateway.expected_data_nodes=1
-      - gateway.recover_after_master_nodes=1
-      - gateway.recover_after_data_nodes=1
-      - action.auto_create_index=true
-      - action.destructive_requires_name=true
-      - cluster.routing.use_adaptive_replica_selection=true
-      - xpack.monitoring.enabled=false
-      - xpack.ml.enabled=false
-      - http.compression=true
-      - http.compression_level=3
       - "ES_JAVA_OPTS=-Xms${XMS} -Xmx${XMX}"
     ulimits:
       memlock:
@@ -53,6 +29,7 @@ services:
     volumes:
       - ./elasticsearch/data:/usr/share/elasticsearch/data:rw
       - ./elasticsearch/logs:/usr/share/elasticsearch/logs:rw
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     ports:
       - 9200:9200
       - 9300:9300
@@ -97,6 +74,64 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro       
+    networks:
+      - efk
+
+  docker-metricbeat:
+    user: root
+    container_name: docker-metricbeat
+    build:
+      context: metricbeat/
+      args:
+        ELK_VERSION: ${ELK_VERSION}
+    volumes:
+      - /:/hostfs:ro
+      - /proc:/hostfs/proc:ro
+      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - efk
+
+  docker-logstash:
+    container_name: docker-logstash
+    build:
+      context: logstash/
+      args:
+        ELK_VERSION: $ELK_VERSION
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    ports:
+      - "5044:5044"
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+      - "9600:9600"
+    networks:
+      - efk
+
+  kafka:
+    image: wurstmeister/kafka:2.13-2.7.0
+    container_name: docker-kafka
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ADVERTISED_PORT: 9092
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    networks:
+      - efk
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: docker-zookeeper
+    ports:
+      - "2181:2181"
     networks:
       - efk
 
