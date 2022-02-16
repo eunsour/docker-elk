@@ -1,6 +1,8 @@
 # docker-efk
 도커 컨테이너 환경에서 <b>Elasticsearch, Kibana</b> 와 Logstash 보다 Resource 를 적게 소모하는 <b>Filebeat</b> 를 사용하였습니다.<br><br>
 
+2022.02.16 Kafka, Zookeeper, Metricbeat 추가
+
 # Getting started 
 ```bash
 git clone https://github.com/eunsour/docker-efk.git
