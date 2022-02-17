@@ -1,4 +1,4 @@
-cluster.name: markcloud-es-cluster
+cluster.name: docker-es-cluster
 node.name: single-node
 bootstrap.memory_lock: true
 
