@@ -37,7 +37,7 @@ services:
       - 9200
       - 9300
     networks:
-      - efk
+      - elk
 
   docker-kibana:
     container_name: docker-kibana
@@ -62,7 +62,7 @@ services:
     expose:
       - 5601
     networks:
-      - efk
+      - elk
 
   docker-filebeat:
     user: root
@@ -75,7 +75,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro       
     networks:
-      - efk
+      - elk
 
   docker-logstash:
     container_name: docker-logstash
@@ -94,7 +94,7 @@ services:
       - "5000:5000/udp"
       - "9600:9600"
     networks:
-      - efk
+      - elk
 
   kafka:
     image: wurstmeister/kafka:2.13-2.7.0
@@ -110,7 +110,7 @@ services:
     depends_on:
       - zookeeper
     networks:
-      - efk
+      - elk
 
   zookeeper:
     image: wurstmeister/zookeeper
@@ -118,7 +118,7 @@ services:
     ports:
       - "2181:2181"
     networks:
-      - efk
+      - elk
 
 volumes:
   data:
@@ -127,5 +127,5 @@ volumes:
     driver: local
 
 networks:
-  efk:
+  elk:
     driver: bridge
